@@ -1,6 +1,6 @@
 /* globals module */
 'use strict';
-// const path = require('path');
+const path = require('path');
 const makeDebug = require('debug');
 const debug = makeDebug('babel-import-analyze-spike');
 
