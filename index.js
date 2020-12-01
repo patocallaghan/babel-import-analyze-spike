@@ -2,7 +2,7 @@
 'use strict';
 // const path = require('path');
 const makeDebug = require('debug');
-const debug = makeDebug('ember-auto-import:babel-plugin-import-declarations');
+const debug = makeDebug('babel-import-analyze-spike');
 
 module.exports = function() {
   let imports = [];
@@ -10,7 +10,7 @@ module.exports = function() {
     name: 'import-declarations',
 
     visitor: {
-      CallExpression: (path) => {
+      CallExpression: (path, state) => {
         if (path.node.callee.type === 'Import') {
           // it's a syntax error to have anything other than exactly one
           // argument, so we can just assume this exists
@@ -20,7 +20,7 @@ module.exports = function() {
               'ember-auto-import only supports dynamic import() with a string literal argument.'
             );
           }
-          console.log('dynamic import');
+          debug(`dynamic import: ${state.file.opts.filename}`)
           imports.push({
             isDynamic: true,
             specifier: argument.value,
@@ -29,9 +29,8 @@ module.exports = function() {
           });
         }
       },
-      ImportDeclaration: (path) => {
-        debug(`import declaration babel plugin`);
-        console.log('named import');
+      ImportDeclaration: (path, state) => {
+        debug(`import: ${state.file.opts.filename}`);
         imports.push({
           isDynamic: false,
           specifier: path.node.source.value,
@@ -39,9 +38,8 @@ module.exports = function() {
           package: {}
         });
       },
-      ExportNamedDeclaration: (path) => {
-        debug(`export named declaration babel plugin`);
-        console.log('named export');
+      ExportNamedDeclaration: (path, state) => {
+        debug(`export: ${state.file.opts.filename}`);
         if (path.node.source) {
           imports.push({
             isDynamic: false,
